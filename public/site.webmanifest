@@ -1,0 +1,17 @@
+{
+  "name": "AFTERSPEND — Financial Decision Simulator",
+  "short_name": "AFTERSPEND",
+  "description": "Spend in the present. See the consequences in advance. An interactive client-side personal finance simulator for ₹10,000 / 30-day budgets.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb"
+}

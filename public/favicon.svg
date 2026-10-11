@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB" />
+      <stop offset="50%" stop-color="#3B82F6" />
+      <stop offset="100%" stop-color="#4F46E5" />
+    </linearGradient>
+    <linearGradient id="dotGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" />
+      <stop offset="100%" stop-color="#06B6D4" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="1.5" flood-color="#0f172a" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <!-- Base rounded squircle container -->
+  <rect width="64" height="64" rx="16" fill="url(#bgGradient)" />
+
+  <!-- Subtle inner border highlight -->
+  <rect x="1.5" y="1.5" width="61" height="61" rx="14.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.25" stroke-width="1.5" />
+
+  <!-- AFTERSPEND 'AS' Bold Monogram -->
+  <!-- Crisp vector path representation for universal, dependency-free rendering across all platforms -->
+  <g filter="url(#shadow)">
+    <!-- Letter 'A' -->
+    <path d="M 12 45 L 21.5 19 L 26.5 19 L 36 45 L 30.2 45 L 28.1 39.2 L 19.9 39.2 L 17.8 45 Z M 21.3 35.2 L 26.7 35.2 L 24 27.2 Z" fill="#FFFFFF" />
+
+    <!-- Letter 'S' -->
+    <path d="M 40.2 41.2 C 41.5 41.8 43.1 42.2 45.1 42.2 C 48.2 42.2 49.9 40.8 49.9 38.6 C 49.9 36.6 48.7 35.5 45.8 34.4 L 43.9 33.7 C 40.6 32.4 38.8 30.3 38.8 26.9 C 38.8 22.8 42.1 20 47.4 20 C 49.3 20 50.9 20.3 52.1 20.9 L 50.8 24.6 C 49.6 24.1 48.5 23.8 47.2 23.8 C 44.4 23.8 42.8 25.1 42.8 27.1 C 42.8 28.9 43.9 29.8 46.8 30.9 L 48.7 31.6 C 52.3 33 54 35.2 54 38.6 C 54 43 50.5 46 44.8 46 C 42.6 46 40.8 45.5 39.2 44.7 Z" fill="#FFFFFF" />
+  </g>
+
+  <!-- Live Pulse / Financial Decision Accent Spark (Cyan dot in top right) -->
+  <circle cx="51.5" cy="12.5" r="3.5" fill="url(#dotGradient)" stroke="#FFFFFF" stroke-width="1.2" />
+</svg>
