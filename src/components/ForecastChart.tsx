@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { DayForecast } from "../types/finance";
 import { formatINR } from "../services/financeCalculations";
 
@@ -37,11 +37,9 @@ export default function ForecastChart({
   const innerHeight = svgHeight - paddingTop - paddingBottom;
 
   // Max and min value for Y axis
-  const maxVal = Math.max(
-    10000,
-    ...data.map((d) => Math.max(d.projectedBalance, d.scenarioBalance ?? 0))
-  );
-  const minVal = 0;
+  const allBalances = data.flatMap((d) => [d.projectedBalance, d.scenarioBalance ?? d.projectedBalance]);
+  const maxVal = Math.max(10000, ...allBalances);
+  const minVal = Math.min(0, ...allBalances);
   const valRange = maxVal - minVal || 1;
 
   const getX = (day: number) => {
@@ -73,15 +71,19 @@ export default function ForecastChart({
   const activePoint = data.find((d) => d.day === activeDayNum);
 
   // Y-axis grid markers
-  const yTicks = [10000, 7500, 5000, 2500, 0];
+  const yTicks = Array.from({ length: 5 }, (_, index) => maxVal - (index * (maxVal - minVal)) / 4);
 
   return (
     <div className="relative w-full overflow-hidden select-none">
       <svg
+        role="group"
+        aria-label={`30-day balance forecast. Starting projected balance ${formatINR(data[0]?.projectedBalance ?? 0)}; ending projected balance ${formatINR(data[data.length - 1]?.projectedBalance ?? 0)}.${hasScenario ? " A scenario balance is also shown." : ""}`}
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
         className="w-full h-auto overflow-visible"
         style={{ minHeight: `${height}px` }}
       >
+        <title>30-day projected balance forecast</title>
+        <desc>Line chart comparing the projected balance over each day of the planning period. Negative values indicate a projected shortfall.</desc>
         <defs>
           <linearGradient id="lightBaseGradient" x1="0" y1="0" x2="0" y2="1">
             <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.18" />
@@ -113,7 +115,7 @@ export default function ForecastChart({
                 textAnchor="end"
                 className="text-[10px] fill-zinc-500 font-mono"
               >
-                ₹{val >= 1000 ? `${val / 1000}k` : val}
+                {val < 0 ? `-₹${Math.abs(val) >= 1000 ? `${Math.round(Math.abs(val) / 100) / 10}k` : Math.round(Math.abs(val))}` : `₹${val >= 1000 ? `${Math.round(val / 100) / 10}k` : Math.round(val)}`}
               </text>
             </g>
           );
@@ -230,8 +232,19 @@ export default function ForecastChart({
               height={innerHeight}
               fill="transparent"
               className="cursor-pointer"
+              role="button"
+              tabIndex={0}
+              aria-label={`Select Day ${d.day}, projected balance ${formatINR(d.projectedBalance)}`}
               onMouseEnter={() => setHoveredDay(d.day)}
               onMouseLeave={() => setHoveredDay(null)}
+              onFocus={() => setHoveredDay(d.day)}
+              onBlur={() => setHoveredDay(null)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter" || event.key === " ") {
+                  event.preventDefault();
+                  onSelectDay?.(d.day);
+                }
+              }}
               onClick={() => onSelectDay?.(d.day)}
             />
           );

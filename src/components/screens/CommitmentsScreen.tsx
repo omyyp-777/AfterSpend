@@ -4,22 +4,9 @@
  */
 
 import React, { useState } from "react";
-import {
-  FinanceState,
-  Commitment,
-  CalculatedMetrics
-} from "../../types/finance";
+import { FinanceState, Commitment, CalculatedMetrics } from "../../types/finance";
 import { formatINR } from "../../services/financeCalculations";
-import {
-  Calendar,
-  PlusCircle,
-  CheckCircle,
-  XCircle,
-  Trash2,
-  Repeat,
-  AlertCircle,
-  Clock
-} from "lucide-react";
+import { Calendar, PlusCircle, Trash2, Repeat } from "lucide-react";
 
 interface CommitmentsScreenProps {
   state: FinanceState;

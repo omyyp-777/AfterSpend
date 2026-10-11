@@ -59,6 +59,7 @@ export interface PurchaseScenario {
 export interface CalculatedMetrics {
   projectedBalance: number;
   remainingCommitments: number;
+  plannedExpenses: number;
   reservedSavings: number;
   uncommittedFunds: number; // Safe-to-spend
   dailyDiscretionaryAllowance: number;

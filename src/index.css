@@ -173,3 +173,223 @@ html.lenis body {
   color: #18181b !important;
   display: block;
 }
+
+
+/* AFTERSPEND global dark theme. Applied at the app shell and inherited by all screens. */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  background: #0b1120;
+  color: #e5edf8;
+}
+
+[data-theme="dark"] .app-shell {
+  background: #0b1120 !important;
+  color: #e5edf8 !important;
+}
+
+[data-theme="dark"] body {
+  background: #0b1120;
+  color: #e5edf8;
+}
+
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-white\/95,
+[data-theme="dark"] .bg-white\/90,
+[data-theme="dark"] .bg-white\/85,
+[data-theme="dark"] .bg-white\/80,
+[data-theme="dark"] .bg-\[\#F8FAFC\] {
+  background-color: #111b2e !important;
+}
+
+[data-theme="dark"] .bg-zinc-50,
+[data-theme="dark"] .bg-zinc-50\/80,
+[data-theme="dark"] .bg-zinc-100,
+[data-theme="dark"] .bg-zinc-100\/80,
+[data-theme="dark"] .bg-zinc-100\/70,
+[data-theme="dark"] .bg-zinc-200,
+[data-theme="dark"] .bg-zinc-200\/80 {
+  background-color: #1a2740 !important;
+}
+
+[data-theme="dark"] .text-zinc-950,
+[data-theme="dark"] .text-zinc-900,
+[data-theme="dark"] .text-zinc-800,
+[data-theme="dark"] .text-zinc-700 {
+  color: #e5edf8 !important;
+}
+
+[data-theme="dark"] .text-zinc-600,
+[data-theme="dark"] .text-zinc-500 {
+  color: #a7b6cc !important;
+}
+
+[data-theme="dark"] .text-zinc-400 {
+  color: #8495ad !important;
+}
+
+[data-theme="dark"] .border-zinc-100,
+[data-theme="dark"] .border-zinc-200,
+[data-theme="dark"] .border-zinc-200\/50,
+[data-theme="dark"] .border-zinc-200\/60,
+[data-theme="dark"] .border-zinc-200\/70,
+[data-theme="dark"] .border-zinc-200\/80,
+[data-theme="dark"] .border-zinc-200\/90,
+[data-theme="dark"] .border-zinc-300 {
+  border-color: #2b3a53 !important;
+}
+
+[data-theme="dark"] .hover\:bg-zinc-50:hover,
+[data-theme="dark"] .hover\:bg-zinc-100:hover,
+[data-theme="dark"] .hover\:bg-zinc-100\/60:hover,
+[data-theme="dark"] .hover\:bg-zinc-100\/80:hover,
+[data-theme="dark"] .hover\:bg-zinc-200:hover {
+  background-color: #24334d !important;
+}
+
+[data-theme="dark"] .shadow-sm,
+[data-theme="dark"] .shadow-xs,
+[data-theme="dark"] .shadow-2xs {
+  --tw-shadow-color: rgb(0 0 0 / 0.25);
+}
+
+[data-theme="dark"] .search,
+[data-theme="dark"] .searchfield {
+  background-color: #18243a !important;
+  color: #f1f5f9 !important;
+  border-color: #34445f !important;
+}
+
+[data-theme="dark"] .search::before,
+[data-theme="dark"] .search::after,
+[data-theme="dark"] .searchfield:focus ~ .search::after {
+  background-color: #e2e8f0;
+  border-color: #e2e8f0;
+}
+
+[data-theme="dark"] .leading-\[0\.96\] {
+  color: #f1f5f9 !important;
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  color: #e5edf8;
+  background-color: #111b2e;
+  border-color: #34445f;
+}
+
+[data-theme="dark"] input::placeholder,
+[data-theme="dark"] textarea::placeholder {
+  color: #8495ad;
+}
+
+[data-theme="dark"] .recharts-cartesian-axis-tick-value,
+[data-theme="dark"] .recharts-legend-item-text {
+  fill: #a7b6cc !important;
+  color: #a7b6cc !important;
+}
+
+[data-theme="dark"] .recharts-cartesian-grid line {
+  stroke: #2b3a53 !important;
+}
+
+[data-theme="dark"] .bg-blue-50,
+[data-theme="dark"] .bg-blue-50\/70 {
+  background-color: #142b4a !important;
+}
+
+[data-theme="dark"] .bg-emerald-50,
+[data-theme="dark"] .bg-emerald-50\/90,
+[data-theme="dark"] .bg-emerald-50\/70 {
+  background-color: #10352f !important;
+}
+
+[data-theme="dark"] .bg-amber-50,
+[data-theme="dark"] .bg-amber-50\/70 {
+  background-color: #3a2c18 !important;
+}
+
+[data-theme="dark"] .bg-rose-50,
+[data-theme="dark"] .bg-rose-50\/90 {
+  background-color: #3a202b !important;
+}
+
+[data-theme="dark"] .text-blue-700,
+[data-theme="dark"] .text-blue-800 {
+  color: #93c5fd !important;
+}
+
+[data-theme="dark"] .text-emerald-700,
+[data-theme="dark"] .text-emerald-800 {
+  color: #6ee7b7 !important;
+}
+
+[data-theme="dark"] .text-rose-600,
+[data-theme="dark"] .text-rose-700,
+[data-theme="dark"] .text-rose-800 {
+  color: #fda4af !important;
+}
+
+[data-theme="dark"] .text-amber-600,
+[data-theme="dark"] .text-amber-700 {
+  color: #fcd34d !important;
+}
+
+[data-theme="dark"] .border-blue-100,
+[data-theme="dark"] .border-blue-200,
+[data-theme="dark"] .border-emerald-100,
+[data-theme="dark"] .border-amber-100,
+[data-theme="dark"] .border-rose-100 {
+  border-color: #334968 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-theme="dark"] *,
+  [data-theme="dark"] *::before,
+  [data-theme="dark"] *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Phase 2 accessibility and motion safeguards */
+:where(button, a, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+  outline: 3px solid #6366f1;
+  outline-offset: 3px;
+}
+
+[role="dialog"]:focus {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+[data-theme="dark"] .text-zinc-400,
+[data-theme="dark"] .text-zinc-500,
+[data-theme="dark"] .text-zinc-600 {
+  color: #a8b5ca !important;
+}
+
+[data-theme="dark"] :where(button, a, input, select, textarea, [role="button"], [tabindex]):focus-visible {
+  outline-color: #a5b4fc;
+}
+
+[data-theme="dark"] .recharts-tooltip-wrapper,
+[data-theme="dark"] .recharts-default-tooltip {
+  color: #e5edf8 !important;
+}
+
+[data-theme="dark"] .reduced-motion-hero {
+  background: linear-gradient(135deg, #0b1120 0%, #111b2e 52%, #172554 100%) !important;
+}

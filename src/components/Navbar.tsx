@@ -5,28 +5,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  LayoutDashboard,
-  Sparkles,
-  TrendingUp,
-  PiggyBank,
-  Calendar,
-  HeartPulse,
-  Plus,
-  RotateCcw,
-  Download,
-  Bell,
-  Menu,
-  X,
-  ChevronDown,
-  ShieldCheck,
-  AlertTriangle,
-  Wallet,
-  Clock,
-  ArrowUpRight,
-  Activity,
-  CheckCircle2
-} from "lucide-react";
+import { LayoutDashboard, Sparkles, TrendingUp, PiggyBank, Calendar, HeartPulse, Plus, RotateCcw, Download, Bell, Menu, X, ChevronDown, ShieldCheck, Wallet, Clock, ArrowUpRight, Activity, Moon, Sun } from "lucide-react";
 import MorphingSearchBar from "./MorphingSearchBar";
 import { formatINR } from "../services/financeCalculations";
 import { CalculatedMetrics, FinanceState } from "../types/finance";
@@ -43,6 +22,8 @@ export interface NavbarProps {
   onExportJSON: () => void;
   onResetDemo: () => void;
   onSelectSimulatorPreset: (name: string, amount: number) => void;
+  theme: "light" | "dark";
+  onToggleTheme: () => void;
 }
 
 const NAV_ITEMS: { id: NavTab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -63,7 +44,9 @@ export default function Navbar({
   onOpenAddCommitment,
   onExportJSON,
   onResetDemo,
-  onSelectSimulatorPreset
+  onSelectSimulatorPreset,
+  theme,
+  onToggleTheme
 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [pulseDropdownOpen, setPulseDropdownOpen] = useState(false);
@@ -107,7 +90,6 @@ export default function Navbar({
   );
 
   const isSafe = metrics.uncommittedFunds >= 0;
-  const isHealthy = metrics.healthScore >= 75;
   const cyclePercent = Math.min(100, Math.round((state.currentDay / state.planningDays) * 100));
 
   return (
@@ -507,6 +489,19 @@ export default function Navbar({
               </AnimatePresence>
             </div>
 
+            {/* Global theme toggle */}
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              aria-pressed={theme === "dark"}
+              title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+              className="inline-flex items-center justify-center gap-1.5 p-2 sm:px-2.5 sm:py-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-950 bg-white hover:bg-zinc-100/80 rounded-xl border border-zinc-200 shadow-2xs transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            >
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <span className="hidden 2xl:inline">{theme === "dark" ? "Light mode" : "Dark mode"}</span>
+            </button>
+
             {/* Export JSON backup button */}
             <button
               onClick={onExportJSON}
@@ -596,6 +591,17 @@ export default function Navbar({
                 );
               })}
             </div>
+
+            {/* Mobile theme control */}
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              aria-pressed={theme === "dark"}
+              className="w-full py-2.5 px-3 rounded-xl border border-zinc-200 text-zinc-700 text-xs font-semibold flex items-center justify-center gap-2 cursor-pointer hover:bg-zinc-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+            >
+              {theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              <span>Switch to {theme === "dark" ? "light" : "dark"} mode</span>
+            </button>
 
             {/* Mobile Action Buttons */}
             <div className="flex flex-col gap-2 pt-2 border-t border-zinc-100">

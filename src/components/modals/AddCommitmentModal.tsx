@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Commitment } from "../../types/finance";
-import { X, Calendar } from "lucide-react";
+import { X } from "lucide-react";
+import { useDialogAccessibility } from "../../hooks/useDialogAccessibility";
 
 interface AddCommitmentModalProps {
   isOpen: boolean;
@@ -26,11 +27,15 @@ export default function AddCommitmentModal({
   const [category, setCategory] = useState("Utilities");
   const [recurring, setRecurring] = useState(true);
 
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogAccessibility(isOpen, dialogRef, onClose);
+
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || amount <= 0) return;
+    if (!name.trim() || name.trim().length > 120 || !Number.isFinite(amount) || amount <= 0 || amount > 10_000_000 ||
+        !Number.isInteger(dueDay) || dueDay < 1 || dueDay > 30) return;
     onAddCommitment({
       name,
       amount,
@@ -46,10 +51,12 @@ export default function AddCommitmentModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/40 backdrop-blur-sm animate-in fade-in">
-      <div className="w-full max-w-md p-6 rounded-2xl bg-white border border-zinc-200 shadow-2xl space-y-4">
+      <div ref={dialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="commitment-dialog-title" className="w-full max-w-md p-6 rounded-2xl bg-white border border-zinc-200 shadow-2xl space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-zinc-950">Add Upcoming Commitment</h3>
+          <h3 id="commitment-dialog-title" className="text-base font-bold text-zinc-950">Add Upcoming Commitment</h3>
           <button
+            type="button"
+            aria-label="Close dialog"
             onClick={onClose}
             className="p-1 rounded-lg text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100 cursor-pointer"
           >
@@ -63,9 +70,11 @@ export default function AddCommitmentModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 mb-1">Commitment Name</label>
+            <label htmlFor="commitment-name" className="block text-xs font-semibold text-zinc-700 mb-1">Commitment Name</label>
             <input
+              id="commitment-name"
               type="text"
+              maxLength={120}
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -76,35 +85,42 @@ export default function AddCommitmentModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1">Amount (INR)</label>
+              <label htmlFor="commitment-amount" className="block text-xs font-semibold text-zinc-700 mb-1">Amount (INR)</label>
               <input
+                id="commitment-amount"
                 type="number"
-                min="10"
+                min="1"
+                max="10000000"
                 step="10"
                 required
                 value={amount}
-                onChange={(e) => setAmount(parseFloat(e.target.value) || 0)}
+                onChange={(e) => {
+                  const next = e.target.value === "" ? 0 : Number(e.target.value);
+                  setAmount(Number.isFinite(next) ? Math.min(10_000_000, Math.max(0, next)) : 0);
+                }}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-mono font-bold text-blue-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-zinc-700 mb-1">Due Day (1–30)</label>
+              <label htmlFor="commitment-day" className="block text-xs font-semibold text-zinc-700 mb-1">Due Day (1–30)</label>
               <input
+                id="commitment-day"
                 type="number"
                 min="1"
                 max="30"
                 required
                 value={dueDay}
-                onChange={(e) => setDueDay(parseInt(e.target.value) || 1)}
+                onChange={(e) => setDueDay(Math.min(30, Math.max(1, Number.parseInt(e.target.value, 10) || 1)))}
                 className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-mono text-zinc-900 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-zinc-700 mb-1">Category</label>
+            <label htmlFor="commitment-category" className="block text-xs font-semibold text-zinc-700 mb-1">Category</label>
             <select
+              id="commitment-category"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 cursor-pointer"

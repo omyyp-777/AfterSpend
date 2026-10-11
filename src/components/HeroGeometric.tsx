@@ -1,24 +1,10 @@
 "use client";
 
-/* eslint-disable react/no-unknown-property */
 import React, { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame, ThreeElements } from "@react-three/fiber";
 import * as THREE from "three";
-import { motion } from "framer-motion";
-import {
-    Wallet,
-    Percent,
-    Target,
-    TrendingUp,
-    Coins,
-    PiggyBank,
-    Scale,
-    ShieldCheck,
-    IndianRupee,
-    CircleDollarSign,
-    Receipt,
-    CreditCard
-} from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
+import { Wallet, Percent, Target, TrendingUp, Coins, PiggyBank, Scale, ShieldCheck, IndianRupee } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -742,6 +728,7 @@ export default function HeroGeometric({
     className,
     ...props
 }: HeroGeometricProps) {
+    const prefersReducedMotion = useReducedMotion();
     return (
         <div
             className={cn("relative w-full min-h-[85vh] flex flex-col items-center justify-center overflow-hidden bg-white text-zinc-950 font-inter", className)}
@@ -753,13 +740,14 @@ export default function HeroGeometric({
         >
             {/* Background Shader, 3D Floating Geometric Elements & Finance Icons */}
             <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none overflow-hidden">
-                <Canvas
+                {!prefersReducedMotion && <Canvas
                     camera={{ position: [0, 0, 4.5], fov: 50 }}
                     frameloop="always"
                     dpr={[1, 1]}
                     gl={{
-                        antialias: true,
+                        antialias: false,
                         alpha: true,
+                        powerPreference: "low-power"
                     }}
                 >
                     {/* 1. Underlying dithered gradient shader canvas with drifting geometric particles & points */}
@@ -767,10 +755,12 @@ export default function HeroGeometric({
 
                     {/* 2. Subtle slow undulating light trails */}
                     <LightTrails speed={speed} />
-                </Canvas>
+                </Canvas>}
 
-                {/* 3. Small, floating Lucide icons related to finance drifting across the background Canvas */}
-                <FloatingFinanceIcons speed={speed} />
+                {prefersReducedMotion && <div aria-hidden="true" className="reduced-motion-hero absolute inset-0 bg-gradient-to-br from-sky-50 via-white to-blue-100" />}
+
+                {/* 3. Small, floating Lucide icons related to finance drifting across the background */}
+                {!prefersReducedMotion && <FloatingFinanceIcons speed={speed} />}
             </div>
 
             {/* Foreground Content */}

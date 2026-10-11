@@ -3,32 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
-import {
-  FinanceState,
-  PurchaseScenario,
-  ScenarioOption,
-  CalculatedMetrics
-} from "../../types/finance";
-import {
-  calculateMetrics,
-  formatINR,
-  generate30DayForecast
-} from "../../services/financeCalculations";
+import { useState } from "react";
+import { FinanceState, PurchaseScenario } from "../../types/finance";
+import { calculateMetrics, formatINR, generate30DayForecast } from "../../services/financeCalculations";
 import ForecastChart from "../ForecastChart";
-import {
-  Sparkles,
-  ArrowRight,
-  RotateCcw,
-  CheckCircle,
-  AlertOctagon,
-  Calendar,
-  Tag,
-  Clock,
-  Layers,
-  HeartPulse,
-  Info
-} from "lucide-react";
+import { RotateCcw, CheckCircle, AlertOctagon, Info } from "lucide-react";
 
 interface SimulatorScreenProps {
   state: FinanceState;
@@ -76,6 +55,11 @@ export default function SimulatorScreen({
   const forecastData = generate30DayForecast(state, currentScenario);
 
   const handleApply = () => {
+    if (currentScenario.selectedOption === "skip") {
+      setSuccessToast("Skipped purchases are not added to your plan.");
+      setTimeout(() => setSuccessToast(null), 3000);
+      return;
+    }
     onApplyToPlan(currentScenario);
     setSuccessToast("Scenario applied to your 30-day plan!");
     setTimeout(() => setSuccessToast(null), 3000);
@@ -157,7 +141,7 @@ export default function SimulatorScreen({
                         name: p.name,
                         amount: p.amount,
                         category: p.category,
-                        priority: p.priority as any
+                        priority: p.priority as PurchaseScenario["priority"]
                       })
                     }
                     className="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200/80 hover:bg-blue-50/60 hover:border-blue-200 text-left transition-all cursor-pointer group"
@@ -177,6 +161,7 @@ export default function SimulatorScreen({
                 </label>
                 <input
                   type="text"
+                  maxLength={120}
                   value={currentScenario.name}
                   onChange={(e) =>
                     onUpdateScenario({ ...currentScenario, name: e.target.value })
@@ -199,7 +184,7 @@ export default function SimulatorScreen({
                     onChange={(e) =>
                       onUpdateScenario({
                         ...currentScenario,
-                        amount: Math.max(0, parseFloat(e.target.value) || 0)
+                        amount: Math.min(10000000, Math.max(0, parseFloat(e.target.value) || 0))
                       })
                     }
                     className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs font-mono font-bold text-blue-600 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
@@ -250,7 +235,7 @@ export default function SimulatorScreen({
                   <select
                     value={currentScenario.priority}
                     onChange={(e) =>
-                      onUpdateScenario({ ...currentScenario, priority: e.target.value as any })
+                      onUpdateScenario({ ...currentScenario, priority: e.target.value as PurchaseScenario["priority"] })
                     }
                     className="w-full px-3.5 py-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-900 font-medium focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all cursor-pointer"
                   >
@@ -532,8 +517,11 @@ export default function SimulatorScreen({
               </div>
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   onClick={handleApply}
-                  className="px-3.5 py-2 text-xs font-semibold text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-xl transition-colors cursor-pointer"
+                  disabled={isSkip}
+                  title={isSkip ? "A skipped purchase cannot be added to the plan" : undefined}
+                  className="px-3.5 py-2 text-xs font-semibold text-zinc-700 bg-zinc-100 hover:bg-zinc-200 rounded-xl transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Apply to Plan (Temporary)
                 </button>

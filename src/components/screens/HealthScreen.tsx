@@ -3,25 +3,10 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
-import {
-  FinanceState,
-  CalculatedMetrics
-} from "../../types/finance";
-import {
-  calculateMetrics,
-  formatINR
-} from "../../services/financeCalculations";
-import {
-  HeartPulse,
-  ShieldAlert,
-  CheckCircle2,
-  AlertTriangle,
-  Sparkles,
-  ArrowRight,
-  TrendingDown,
-  Info
-} from "lucide-react";
+import { useState } from "react";
+import { FinanceState, CalculatedMetrics } from "../../types/finance";
+import { calculateMetrics, formatINR } from "../../services/financeCalculations";
+import { CheckCircle2, AlertTriangle } from "lucide-react";
 
 interface HealthScreenProps {
   state: FinanceState;

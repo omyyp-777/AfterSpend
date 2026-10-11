@@ -3,25 +3,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
-import {
-  FinanceState,
-  PurchaseScenario,
-  CalculatedMetrics
-} from "../../types/finance";
-import {
-  generate30DayForecast,
-  formatINR
-} from "../../services/financeCalculations";
+import { useState } from "react";
+import { FinanceState, PurchaseScenario, CalculatedMetrics } from "../../types/finance";
+import { generate30DayForecast, formatINR } from "../../services/financeCalculations";
 import ForecastChart from "../ForecastChart";
-import {
-  Calendar,
-  AlertCircle,
-  Tag,
-  CheckCircle,
-  Clock,
-  ArrowRight
-} from "lucide-react";
+
 
 interface ForecastScreenProps {
   state: FinanceState;
@@ -31,7 +17,7 @@ interface ForecastScreenProps {
 
 export default function ForecastScreen({
   state,
-  metrics,
+  metrics: _metrics,
   scenario
 }: ForecastScreenProps) {
   const [selectedDay, setSelectedDay] = useState<number>(1);

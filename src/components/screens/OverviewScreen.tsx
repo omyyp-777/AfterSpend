@@ -3,32 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from "react";
+
 import { motion } from "framer-motion";
-import {
-  FinanceState,
-  CalculatedMetrics,
-  PurchaseScenario
-} from "../../types/finance";
-import {
-  formatINR,
-  generate30DayForecast,
-  generateInsights
-} from "../../services/financeCalculations";
+import { FinanceState, CalculatedMetrics, PurchaseScenario } from "../../types/finance";
+import { formatINR, generate30DayForecast, generateInsights } from "../../services/financeCalculations";
 import ForecastChart from "../ForecastChart";
-import {
-  ShieldAlert,
-  Wallet,
-  Calendar,
-  Sparkles,
-  ArrowRight,
-  TrendingUp,
-  AlertTriangle,
-  PlusCircle,
-  Clock,
-  Layers,
-  HeartPulse
-} from "lucide-react";
+import { ShieldAlert, Calendar, Sparkles, ArrowRight, PlusCircle, FileText } from "lucide-react";
 
 interface OverviewScreenProps {
   state: FinanceState;
@@ -38,6 +18,8 @@ interface OverviewScreenProps {
   onOpenAddExpense: () => void;
   onOpenAddCommitment: () => void;
   onMarkCommitmentPaid: (id: string) => void;
+  onDownloadReport: () => void | Promise<void>;
+  reportMessage?: string;
 }
 
 export default function OverviewScreen({
@@ -47,7 +29,9 @@ export default function OverviewScreen({
   onNavigateTab,
   onOpenAddExpense,
   onOpenAddCommitment,
-  onMarkCommitmentPaid
+  onMarkCommitmentPaid,
+  onDownloadReport,
+  reportMessage
 }: OverviewScreenProps) {
   const forecastData = generate30DayForecast(state, scenario);
   const insights = generateInsights(state, metrics, scenario);
@@ -55,12 +39,27 @@ export default function OverviewScreen({
     .filter((c) => c.status === "upcoming")
     .sort((a, b) => a.dueDay - b.dueDay);
 
-  const confirmedTransactions = state.transactions.filter(
-    (t) => t.status === "confirmed"
-  );
-
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h2 className="text-xl font-bold text-zinc-950">Your financial overview</h2>
+          <p className="text-sm text-zinc-500">A clear snapshot of your money, commitments, and 30-day runway.</p>
+        </div>
+        <button
+          type="button"
+          onClick={onDownloadReport}
+          disabled={reportMessage === "Preparing your financial report…"}
+          aria-busy={reportMessage === "Preparing your financial report…"}
+          className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-blue-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-wait disabled:opacity-70"
+        >
+          <FileText className="h-4 w-4" aria-hidden="true" />
+          Download Financial Report
+        </button>
+      </div>
+      {reportMessage && (
+        <p className="text-sm text-zinc-600" role="status" aria-live="polite">{reportMessage}</p>
+      )}
       {/* Financial Summary Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {/* Card 1: Safe-To-Spend (Hero Metric) */}
@@ -85,7 +84,7 @@ export default function OverviewScreen({
             {formatINR(metrics.uncommittedFunds)}
           </div>
           <p className="mt-2.5 text-xs text-zinc-500 leading-relaxed">
-            Discretionary cash after reserving ₹{metrics.remainingCommitments} bills and ₹{metrics.reservedSavings} savings.
+            After reserving ₹{metrics.remainingCommitments} bills, ₹{metrics.plannedExpenses} planned purchases, and ₹{metrics.reservedSavings} savings.
           </p>
         </motion.div>
 

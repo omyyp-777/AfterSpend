@@ -5,24 +5,9 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import confetti from "canvas-confetti";
-import {
-  FinanceState,
-  SavingsGoal,
-  CalculatedMetrics
-} from "../../types/finance";
+import { FinanceState, SavingsGoal, CalculatedMetrics } from "../../types/finance";
 import { formatINR } from "../../services/financeCalculations";
-import {
-  ShieldCheck,
-  PlusCircle,
-  PiggyBank,
-  Edit2,
-  Trash2,
-  CheckCircle2,
-  AlertTriangle,
-  ArrowRight,
-  Sparkles,
-  PartyPopper
-} from "lucide-react";
+import { PlusCircle, PiggyBank, Edit2, Trash2, CheckCircle2, Sparkles, PartyPopper } from "lucide-react";
 
 interface SavingsScreenProps {
   state: FinanceState;
@@ -97,7 +82,7 @@ export default function SavingsScreen({
   const [name, setName] = useState("");
   const [targetAmount, setTargetAmount] = useState<number>(1000);
   const [allocatedAmount, setAllocatedAmount] = useState<number>(500);
-  const [category, setCategory] = useState("Emergency Reserve");
+  const category = "Emergency Reserve";
 
   // Track previous allocation ratios to fire confetti only on transitioning to 100%
   const prevAllocationsRef = useRef<Map<string, number>>(new Map());
