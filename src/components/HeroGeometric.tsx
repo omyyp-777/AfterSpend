@@ -5,6 +5,20 @@ import React, { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame, ThreeElements } from "@react-three/fiber";
 import * as THREE from "three";
 import { motion } from "framer-motion";
+import {
+    Wallet,
+    Percent,
+    Target,
+    TrendingUp,
+    Coins,
+    PiggyBank,
+    Scale,
+    ShieldCheck,
+    IndianRupee,
+    CircleDollarSign,
+    Receipt,
+    CreditCard
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -443,6 +457,265 @@ const LightTrails = ({ speed = 0.6 }: { speed?: number }) => {
     );
 };
 
+// --- Floating Finance Lucide Icons Drift Layer ---
+
+interface FinanceDriftIcon {
+    id: string;
+    icon: React.ComponentType<{ className?: string }>;
+    initialLeft: string;
+    initialTop: string;
+    driftX: number;
+    driftY: number;
+    rotateDeg: number;
+    duration: number;
+    delay: number;
+    sizeClass: string;
+    badgeStyle: "glass-card" | "glass-circle" | "glyph";
+    baseOpacity: number;
+    colorClass: string;
+}
+
+const FINANCE_ICONS: FinanceDriftIcon[] = [
+    {
+        id: "wallet-1",
+        icon: Wallet,
+        initialLeft: "8%",
+        initialTop: "24%",
+        driftX: 30,
+        driftY: -35,
+        rotateDeg: 12,
+        duration: 22,
+        delay: 0,
+        sizeClass: "w-4.5 h-4.5 sm:w-5 sm:h-5",
+        badgeStyle: "glass-card",
+        baseOpacity: 0.42,
+        colorClass: "text-blue-600/75"
+    },
+    {
+        id: "percent-1",
+        icon: Percent,
+        initialLeft: "84%",
+        initialTop: "18%",
+        driftX: -28,
+        driftY: -28,
+        rotateDeg: -15,
+        duration: 25,
+        delay: 1.5,
+        sizeClass: "w-4 h-4 sm:w-4.5 sm:h-4.5",
+        badgeStyle: "glass-circle",
+        baseOpacity: 0.45,
+        colorClass: "text-indigo-600/75"
+    },
+    {
+        id: "target-1",
+        icon: Target,
+        initialLeft: "14%",
+        initialTop: "68%",
+        driftX: 32,
+        driftY: -30,
+        rotateDeg: 18,
+        duration: 20,
+        delay: 2.2,
+        sizeClass: "w-4.5 h-4.5 sm:w-5 sm:h-5",
+        badgeStyle: "glass-card",
+        baseOpacity: 0.4,
+        colorClass: "text-sky-600/70"
+    },
+    {
+        id: "trending-1",
+        icon: TrendingUp,
+        initialLeft: "88%",
+        initialTop: "62%",
+        driftX: -30,
+        driftY: -34,
+        rotateDeg: -10,
+        duration: 24,
+        delay: 0.8,
+        sizeClass: "w-4.5 h-4.5 sm:w-5 sm:h-5",
+        badgeStyle: "glass-card",
+        baseOpacity: 0.42,
+        colorClass: "text-blue-600/70"
+    },
+    {
+        id: "coins-1",
+        icon: Coins,
+        initialLeft: "26%",
+        initialTop: "14%",
+        driftX: 20,
+        driftY: -22,
+        rotateDeg: 10,
+        duration: 26,
+        delay: 3.5,
+        sizeClass: "w-4 h-4 sm:w-4.5 sm:h-4.5",
+        badgeStyle: "glass-circle",
+        baseOpacity: 0.35,
+        colorClass: "text-blue-500/65"
+    },
+    {
+        id: "piggy-1",
+        icon: PiggyBank,
+        initialLeft: "72%",
+        initialTop: "38%",
+        driftX: -22,
+        driftY: -30,
+        rotateDeg: 8,
+        duration: 28,
+        delay: 1.0,
+        sizeClass: "w-4 h-4 sm:w-4.5 sm:h-4.5",
+        badgeStyle: "glass-card",
+        baseOpacity: 0.38,
+        colorClass: "text-indigo-500/65"
+    },
+    {
+        id: "rupee-1",
+        icon: IndianRupee,
+        initialLeft: "5%",
+        initialTop: "46%",
+        driftX: 24,
+        driftY: -26,
+        rotateDeg: -12,
+        duration: 21,
+        delay: 2.7,
+        sizeClass: "w-4 h-4 sm:w-4.5 sm:h-4.5",
+        badgeStyle: "glyph",
+        baseOpacity: 0.35,
+        colorClass: "text-blue-600/65"
+    },
+    {
+        id: "scale-1",
+        icon: Scale,
+        initialLeft: "76%",
+        initialTop: "80%",
+        driftX: -24,
+        driftY: -25,
+        rotateDeg: 14,
+        duration: 23,
+        delay: 4.1,
+        sizeClass: "w-4 h-4 sm:w-4.5 sm:h-4.5",
+        badgeStyle: "glass-circle",
+        baseOpacity: 0.34,
+        colorClass: "text-sky-600/65"
+    },
+    {
+        id: "shield-1",
+        icon: ShieldCheck,
+        initialLeft: "32%",
+        initialTop: "82%",
+        driftX: 25,
+        driftY: -28,
+        rotateDeg: -8,
+        duration: 27,
+        delay: 1.8,
+        sizeClass: "w-4.5 h-4.5 sm:w-5 sm:h-5",
+        badgeStyle: "glass-card",
+        baseOpacity: 0.36,
+        colorClass: "text-blue-600/70"
+    },
+    {
+        id: "percent-2",
+        icon: Percent,
+        initialLeft: "42%",
+        initialTop: "8%",
+        driftX: 18,
+        driftY: -20,
+        rotateDeg: 15,
+        duration: 29,
+        delay: 3.0,
+        sizeClass: "w-3.5 h-3.5 sm:w-4 sm:h-4",
+        badgeStyle: "glyph",
+        baseOpacity: 0.28,
+        colorClass: "text-blue-500/50"
+    },
+    {
+        id: "wallet-2",
+        icon: Wallet,
+        initialLeft: "62%",
+        initialTop: "12%",
+        driftX: -20,
+        driftY: -24,
+        rotateDeg: -14,
+        duration: 25,
+        delay: 4.5,
+        sizeClass: "w-4 h-4 sm:w-4.5 sm:h-4.5",
+        badgeStyle: "glass-circle",
+        baseOpacity: 0.32,
+        colorClass: "text-indigo-600/65"
+    },
+    {
+        id: "target-2",
+        icon: Target,
+        initialLeft: "92%",
+        initialTop: "32%",
+        driftX: -24,
+        driftY: -26,
+        rotateDeg: 12,
+        duration: 22,
+        delay: 2.0,
+        sizeClass: "w-4 h-4 sm:w-4.5 sm:h-4.5",
+        badgeStyle: "glyph",
+        baseOpacity: 0.32,
+        colorClass: "text-sky-600/60"
+    }
+];
+
+const FloatingFinanceIcons = ({ speed = 0.6 }: { speed?: number }) => {
+    return (
+        <div className="absolute inset-0 pointer-events-none overflow-hidden select-none z-1">
+            {FINANCE_ICONS.map((item) => {
+                const IconComponent = item.icon;
+                const effectiveDuration = Math.max(8, item.duration / Math.max(speed, 0.2));
+
+                return (
+                    <motion.div
+                        key={item.id}
+                        className="absolute"
+                        style={{
+                            left: item.initialLeft,
+                            top: item.initialTop,
+                            opacity: item.baseOpacity
+                        }}
+                        initial={{
+                            x: 0,
+                            y: 0,
+                            rotate: 0,
+                            scale: 0.95
+                        }}
+                        animate={{
+                            x: [0, item.driftX, item.driftX * 0.5, -item.driftX * 0.4, 0],
+                            y: [0, item.driftY, item.driftY * 1.3, item.driftY * 0.4, 0],
+                            rotate: [0, item.rotateDeg, -item.rotateDeg * 0.6, 0],
+                            scale: [0.95, 1.05, 0.98, 0.95]
+                        }}
+                        transition={{
+                            duration: effectiveDuration,
+                            repeat: Infinity,
+                            repeatType: "mirror",
+                            ease: "easeInOut",
+                            delay: item.delay
+                        }}
+                    >
+                        {item.badgeStyle === "glass-card" && (
+                            <div className="p-2 sm:p-2.5 rounded-xl bg-white/45 backdrop-blur-xs border border-blue-200/50 shadow-xs flex items-center justify-center">
+                                <IconComponent className={cn(item.sizeClass, item.colorClass)} />
+                            </div>
+                        )}
+                        {item.badgeStyle === "glass-circle" && (
+                            <div className="p-2 sm:p-2.5 rounded-full bg-blue-50/50 backdrop-blur-xs border border-blue-200/60 shadow-xs flex items-center justify-center">
+                                <IconComponent className={cn(item.sizeClass, item.colorClass)} />
+                            </div>
+                        )}
+                        {item.badgeStyle === "glyph" && (
+                            <div className="p-1.5 flex items-center justify-center drop-shadow-xs">
+                                <IconComponent className={cn(item.sizeClass, item.colorClass)} />
+                            </div>
+                        )}
+                    </motion.div>
+                );
+            })}
+        </div>
+    );
+};
+
 // --- Main HeroGeometric Component ---
 
 interface HeroGeometricProps extends React.ComponentPropsWithoutRef<"div"> {
@@ -478,8 +751,8 @@ export default function HeroGeometric({
             }}
             {...props}
         >
-            {/* Background Shader & 3D Floating Geometric Elements */}
-            <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none">
+            {/* Background Shader, 3D Floating Geometric Elements & Finance Icons */}
+            <div className="absolute top-0 left-0 w-full h-full z-0 pointer-events-none overflow-hidden">
                 <Canvas
                     camera={{ position: [0, 0, 4.5], fov: 50 }}
                     frameloop="always"
@@ -495,6 +768,9 @@ export default function HeroGeometric({
                     {/* 2. Subtle slow undulating light trails */}
                     <LightTrails speed={speed} />
                 </Canvas>
+
+                {/* 3. Small, floating Lucide icons related to finance drifting across the background Canvas */}
+                <FloatingFinanceIcons speed={speed} />
             </div>
 
             {/* Foreground Content */}
