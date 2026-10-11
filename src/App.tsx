@@ -25,6 +25,7 @@ import {
 
 // Components & Screens
 import HeroGeometric from "./components/HeroGeometric";
+import Navbar, { NavTab } from "./components/Navbar";
 import MorphingSearchBar from "./components/MorphingSearchBar";
 import OverviewScreen from "./components/screens/OverviewScreen";
 import SimulatorScreen from "./components/screens/SimulatorScreen";
@@ -53,8 +54,7 @@ import {
   HelpCircle
 } from "lucide-react";
 
-type NavTab = "overview" | "simulator" | "forecast" | "savings" | "commitments" | "health";
-
+// Navigation items
 const NAV_ITEMS: { id: NavTab; label: string; icon: any }[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "simulator", label: "Decision Simulator", icon: Sparkles },
@@ -283,68 +283,25 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-zinc-900 font-sans selection:bg-blue-600 selection:text-white">
-      {/* 1. TOP BAR */}
-      <header className="sticky top-0 z-50 flex items-center justify-between gap-6 px-4 sm:px-8 lg:px-12 py-3 bg-white/80 backdrop-blur-md border-b border-zinc-200/80 shadow-xs">
-        {/* Brand Zone */}
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => handleSelectTab("overview")}
-            className="flex items-center gap-2 group text-left cursor-pointer"
-          >
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white flex items-center justify-center font-black font-mono text-base tracking-tighter shadow-sm">
-              AS
-            </div>
-            <div>
-              <span className="text-base font-black tracking-tight text-zinc-950 block group-hover:text-blue-600 transition-colors leading-none">
-                AFTERSPEND
-              </span>
-              <span className="text-[10px] text-zinc-500 font-mono hidden sm:inline">
-                PROMPT RUN 2026
-              </span>
-            </div>
-          </button>
-
-          {/* Budget Period Trust Marker */}
-          <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-blue-50/80 border border-blue-200/60 text-xs">
-            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" />
-            <span className="text-zinc-600 font-medium">Budget:</span>
-            <span className="font-mono font-bold text-blue-950">₹10,000 / 30 Days</span>
-          </div>
-        </div>
-
-        {/* Center / Right Zone: Morphing Search + Data Utilities */}
-        <div className="flex items-center gap-3">
-          <MorphingSearchBar
-            onNavigateTab={(tab) => handleSelectTab(tab as NavTab)}
-            onSelectSimulatorPreset={(pName, pAmount) => {
-              setCurrentScenario((prev) => ({
-                ...prev,
-                name: pName,
-                amount: pAmount
-              }));
-              handleSelectTab("simulator");
-            }}
-          />
-
-          <button
-            onClick={() => exportFinanceStateJSON(state)}
-            title="Export Local State Backup (JSON)"
-            className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-950 bg-white hover:bg-zinc-100/80 rounded-xl border border-zinc-200 shadow-xs transition-colors cursor-pointer"
-          >
-            <Download className="w-3.5 h-3.5" />
-            <span className="hidden lg:inline">Export</span>
-          </button>
-
-          <button
-            onClick={() => setResetModalOpen(true)}
-            title="Reset to Demo State (₹10,000 / 30 Days)"
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:text-rose-600 bg-white hover:bg-rose-50/80 rounded-xl border border-zinc-200 shadow-xs transition-colors cursor-pointer"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Reset Demo</span>
-          </button>
-        </div>
-      </header>
+      {/* 1. TOP NAVBAR */}
+      <Navbar
+        activeTab={activeTab}
+        onSelectTab={handleSelectTab}
+        state={state}
+        metrics={baselineMetrics}
+        onOpenAddExpense={() => setExpenseModalOpen(true)}
+        onOpenAddCommitment={() => setCommitmentModalOpen(true)}
+        onExportJSON={() => exportFinanceStateJSON(state)}
+        onResetDemo={() => setResetModalOpen(true)}
+        onSelectSimulatorPreset={(pName, pAmount) => {
+          setCurrentScenario((prev) => ({
+            ...prev,
+            name: pName,
+            amount: pAmount
+          }));
+          handleSelectTab("simulator");
+        }}
+      />
 
       {/* 2. HERO SECTION WITH EXACT HeroGeometric WEBGL SHADER */}
       <section className="relative w-full border-b border-zinc-200/80 overflow-hidden bg-white">
