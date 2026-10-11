@@ -23,6 +23,10 @@ npm audit --omit=dev
 
 The TypeScript compiler is configured in strict mode. ESLint fails on unused TypeScript/TSX variables and imports. `npm test` runs calculation and persisted-data validation tests; `npm run check` runs type checking, linting, tests, and a production build. Review dependency audit results before release.
 
+## Architecture and performance
+
+See [ARCHITECTURE.md](./ARCHITECTURE.md) for module boundaries and refactoring guidance, and [PERFORMANCE.md](./PERFORMANCE.md) for performance, accessibility, and release verification checklists. These documents describe recommended checks; they do not claim a Lighthouse audit has already passed.
+
 ## Deployment
 Deploy the repository to a static hosting provider such as Cloudflare Pages, Netlify, or Vercel with build command `npm run build` and output directory `dist`. Configure the hosting provider to serve `index.html` for application routes if client-side routing is added. Verify the resulting URL is publicly accessible over HTTPS.
 
