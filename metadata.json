@@ -1,0 +1,6 @@
+{
+  "name": "AFTERSPEND — Financial Decision Simulator",
+  "description": "Spend in the present. See the consequences in advance. An interactive client-side personal finance simulator for ₹10,000 / 30-day budgets.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

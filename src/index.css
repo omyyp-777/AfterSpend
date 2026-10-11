@@ -1,0 +1,175 @@
+@import "tailwindcss";
+
+:root {
+  --font-inter: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-montserrat: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+body {
+  font-family: var(--font-inter);
+}
+
+h1, h2, h3, h4, h5, h6, .font-heading {
+  font-family: var(--font-montserrat);
+}
+
+.font-montserrat {
+  font-family: var(--font-montserrat) !important;
+}
+
+.font-inter {
+  font-family: var(--font-inter) !important;
+}
+
+/* Lenis Smooth Scrolling */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* Morphing Search Bar */
+.searchfield {
+  font-weight: 600;
+  position: absolute;
+  margin: auto;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 50px;
+  outline: none;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: #fff;
+  color: #111;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+  padding: 0 50px 0 20px;
+  border-radius: 30px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  opacity: 0;
+  z-index: 5;
+  font-size: 13px;
+  letter-spacing: 0.02em;
+}
+
+.searchfield:hover {
+  cursor: pointer;
+}
+
+.search {
+  position: absolute;
+  margin: auto;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  width: 50px;
+  height: 50px;
+  background: #fff;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  z-index: 4;
+}
+
+.search:hover {
+  cursor: pointer;
+}
+
+/* search icon */
+.search::before {
+  content: "";
+  position: absolute;
+  margin: auto;
+  top: 10px;
+  right: 8px;
+  bottom: -5px;
+  left: 22px;
+  width: 12px;
+  height: 2px;
+  background-color: #111;
+  transform: rotate(45deg);
+  transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.search::after {
+  content: "";
+  position: absolute;
+  margin: auto;
+  top: -5px;
+  right: 0;
+  bottom: 0;
+  left: -5px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: 2px solid #111;
+  transition: all 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* expand width of searchfield on focus */
+.searchfield:focus {
+  width: 300px;
+  opacity: 1;
+  cursor: text;
+}
+
+.searchfield:focus ~ .search {
+  right: -240px;
+  background: transparent;
+  box-shadow: none;
+  border-color: transparent;
+  z-index: 6;
+}
+
+/* css for cancel icon */
+.searchfield:focus ~ .search::before {
+  top: 28px;
+  left: 15px;
+  width: 20px;
+  height: 2px;
+  bottom: 25px;
+}
+
+.searchfield:focus ~ .search::after {
+  top: 29px;
+  left: -8px;
+  width: 20px;
+  right: -15px;
+  height: 2px;
+  border: none;
+  bottom: 25px;
+  background: #111;
+  border-radius: 0%;
+  transform: rotate(-45deg);
+}
+
+/* HeroGeometric Container & Typography Reliability */
+[style*="containerType"],
+[style*="container-type"] {
+  container-type: inline-size !important;
+}
+
+.leading-\[0\.96\] {
+  font-size: clamp(2.75rem, 8cqi, 5.5rem);
+  color: #18181b !important;
+  display: block;
+}
