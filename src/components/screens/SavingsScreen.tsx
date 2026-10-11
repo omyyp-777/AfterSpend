@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import confetti from "canvas-confetti";
 import {
   FinanceState,
   SavingsGoal,
@@ -16,9 +17,11 @@ import {
   PiggyBank,
   Edit2,
   Trash2,
-  CheckCircle,
+  CheckCircle2,
   AlertTriangle,
-  ArrowRight
+  ArrowRight,
+  Sparkles,
+  PartyPopper
 } from "lucide-react";
 
 interface SavingsScreenProps {
@@ -28,6 +31,56 @@ interface SavingsScreenProps {
   onAddGoal: (goal: Omit<SavingsGoal, "id">) => void;
   onDeleteGoal: (goalId: string) => void;
 }
+
+/**
+ * Multi-cannon celebratory confetti effect using canvas-confetti
+ */
+export const triggerGoalConfetti = () => {
+  const duration = 2.2 * 1000;
+  const animationEnd = Date.now() + duration;
+  const colors = ["#2563EB", "#10B981", "#F59E0B", "#6366F1", "#EC4899", "#06B6D4"];
+
+  // 1. Initial burst from center-bottom
+  confetti({
+    particleCount: 90,
+    spread: 70,
+    origin: { y: 0.65 },
+    colors,
+    zIndex: 9999
+  });
+
+  // 2. Continuous celebratory cannons from both flanks
+  const interval: ReturnType<typeof setInterval> = setInterval(() => {
+    const timeLeft = animationEnd - Date.now();
+
+    if (timeLeft <= 0) {
+      clearInterval(interval);
+      return;
+    }
+
+    const particleCount = 45 * (timeLeft / duration);
+
+    // Left cannon
+    confetti({
+      particleCount,
+      angle: 60,
+      spread: 55,
+      origin: { x: 0, y: 0.7 },
+      colors,
+      zIndex: 9999
+    });
+
+    // Right cannon
+    confetti({
+      particleCount,
+      angle: 120,
+      spread: 55,
+      origin: { x: 1, y: 0.7 },
+      colors,
+      zIndex: 9999
+    });
+  }, 220);
+};
 
 export default function SavingsScreen({
   state,
@@ -46,26 +99,72 @@ export default function SavingsScreen({
   const [allocatedAmount, setAllocatedAmount] = useState<number>(500);
   const [category, setCategory] = useState("Emergency Reserve");
 
+  // Track previous allocation ratios to fire confetti only on transitioning to 100%
+  const prevAllocationsRef = useRef<Map<string, number>>(new Map());
+  const isFirstRender = useRef(true);
+
+  useEffect(() => {
+    // On subsequent updates, detect if any goal crossed into 100% completion
+    if (!isFirstRender.current) {
+      let newlyCompleted = false;
+
+      state.savingsGoals.forEach((goal) => {
+        const prevAllocated = prevAllocationsRef.current.get(goal.id) ?? 0;
+        const wasCompleted = prevAllocated >= goal.targetAmount;
+        const isNowCompleted = goal.allocatedAmount >= goal.targetAmount;
+
+        if (!wasCompleted && isNowCompleted) {
+          newlyCompleted = true;
+        }
+      });
+
+      if (newlyCompleted) {
+        triggerGoalConfetti();
+      }
+    } else {
+      isFirstRender.current = false;
+    }
+
+    // Update map for next comparison
+    const newMap = new Map<string, number>();
+    state.savingsGoals.forEach((g) => newMap.set(g.id, g.allocatedAmount));
+    prevAllocationsRef.current = newMap;
+  }, [state.savingsGoals]);
+
   const handleStartEdit = (goal: SavingsGoal) => {
     setEditingId(goal.id);
     setEditAllocatedAmount(goal.allocatedAmount);
   };
 
-  const handleSaveEdit = (goalId: string) => {
-    onUpdateGoalAllocation(goalId, editAllocatedAmount);
+  const handleSaveEdit = (goalId: string, currentGoalTarget: number) => {
+    const finalAllocated = Math.min(currentGoalTarget, Math.max(0, editAllocatedAmount));
+    onUpdateGoalAllocation(goalId, finalAllocated);
+    
+    // Explicit celebratory check
+    if (finalAllocated >= currentGoalTarget) {
+      triggerGoalConfetti();
+    }
+    
     setEditingId(null);
   };
 
   const handleCreateGoal = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || targetAmount <= 0) return;
+    const finalAllocated = Math.min(targetAmount, allocatedAmount);
+    
     onAddGoal({
       name,
       targetAmount,
-      allocatedAmount: Math.min(targetAmount, allocatedAmount),
+      allocatedAmount: finalAllocated,
       targetDay: 30,
       category
     });
+
+    if (finalAllocated >= targetAmount) {
+      triggerGoalConfetti();
+    }
+
     setName("");
     setTargetAmount(1000);
     setAllocatedAmount(500);
@@ -84,7 +183,7 @@ export default function SavingsScreen({
             <span aria-hidden="true">·</span>
             <span>Protected Reserves</span>
           </div>
-          <h2 className="text-2xl md:text-3xl font-extrabold text-zinc-950 tracking-tight">
+          <h2 className="text-2xl md:text-3xl font-extrabold text-zinc-950 tracking-tight font-montserrat">
             Protected Savings Goals
           </h2>
           <p className="mt-1 text-xs text-zinc-600 max-w-2xl leading-relaxed">
@@ -103,7 +202,7 @@ export default function SavingsScreen({
       </div>
 
       {/* Aggregate Savings Banner */}
-      <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-50/80 via-white to-indigo-50/80 border border-blue-200/80 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+      <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-50/80 via-white to-indigo-50/80 border border-blue-200/80 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
         <div>
           <div className="text-xs text-blue-700 uppercase tracking-wider font-bold mb-1">
             Total Savings Protected
@@ -211,26 +310,57 @@ export default function SavingsScreen({
             100,
             Math.round((goal.allocatedAmount / goal.targetAmount) * 100)
           );
+          const isComplete = percent >= 100;
           const isEditing = editingId === goal.id;
 
           return (
             <div
               key={goal.id}
-              className="p-6 rounded-2xl bg-white border border-zinc-200/80 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-5 relative"
+              className={`p-6 rounded-2xl bg-white border transition-all flex flex-col justify-between space-y-5 relative shadow-xs hover:shadow-md ${
+                isComplete
+                  ? "border-emerald-200/90 ring-1 ring-emerald-500/10"
+                  : "border-zinc-200/80"
+              }`}
             >
               <div>
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex items-center gap-2.5">
-                    <div className="p-2.5 rounded-xl bg-blue-50 text-blue-600">
+                    <div
+                      className={`p-2.5 rounded-xl ${
+                        isComplete
+                          ? "bg-emerald-50 text-emerald-600 ring-1 ring-emerald-200/70"
+                          : "bg-blue-50 text-blue-600"
+                      }`}
+                    >
                       <PiggyBank className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold text-zinc-900">{goal.name}</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="text-sm font-bold text-zinc-900">{goal.name}</h4>
+                        {isComplete && (
+                          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold font-mono bg-emerald-100 text-emerald-800">
+                            <CheckCircle2 className="w-3 h-3" />
+                            100%
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[11px] text-zinc-500 font-medium">{goal.category}</span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1.5">
+                    {/* If goal is 100% complete, provide celebratory confetti trigger */}
+                    {isComplete && (
+                      <button
+                        onClick={() => triggerGoalConfetti()}
+                        title="Celebrate 100% Completion with Confetti!"
+                        className="p-1.5 text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 rounded-lg cursor-pointer transition-colors shadow-2xs flex items-center gap-1 text-[11px] font-bold"
+                      >
+                        <PartyPopper className="w-3.5 h-3.5" />
+                        <span className="hidden sm:inline">Celebrate!</span>
+                      </button>
+                    )}
+
                     <button
                       onClick={() => handleStartEdit(goal)}
                       title="Adjust Allocation"
@@ -261,24 +391,63 @@ export default function SavingsScreen({
                 </div>
 
                 {/* Progress bar */}
-                <div className="mt-3 w-full h-2 bg-zinc-100 rounded-full overflow-hidden">
+                <div className="mt-3 w-full h-2.5 bg-zinc-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full transition-all duration-300"
+                    className={`h-full rounded-full transition-all duration-500 ${
+                      isComplete
+                        ? "bg-gradient-to-r from-emerald-500 to-teal-500 shadow-sm shadow-emerald-500/30"
+                        : "bg-gradient-to-r from-blue-600 to-indigo-600"
+                    }`}
                     style={{ width: `${percent}%` }}
                   />
                 </div>
-                <div className="mt-1 flex justify-between text-[11px] font-mono text-zinc-500">
-                  <span>{percent}% Completed</span>
-                  <span>{formatINR(Math.max(0, goal.targetAmount - goal.allocatedAmount))} remaining</span>
+                <div className="mt-1.5 flex justify-between text-[11px] font-mono text-zinc-500">
+                  <span className={isComplete ? "text-emerald-700 font-bold" : ""}>
+                    {percent}% Completed
+                  </span>
+                  <span>
+                    {isComplete
+                      ? "Fully Ring-Fenced"
+                      : `${formatINR(Math.max(0, goal.targetAmount - goal.allocatedAmount))} remaining`}
+                  </span>
                 </div>
+
+                {/* Celebratory Callout Banner when 100% complete */}
+                {isComplete && (
+                  <div className="mt-3 p-2.5 rounded-xl bg-emerald-50/70 border border-emerald-200/80 flex items-center justify-between gap-2 animate-in fade-in">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
+                      <span className="text-xs font-semibold text-emerald-950">
+                        Goal achieved! ₹{goal.targetAmount.toLocaleString("en-IN")} ring-fenced & safe.
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => triggerGoalConfetti()}
+                      className="text-[11px] font-bold text-emerald-700 hover:text-emerald-800 bg-white hover:bg-emerald-100/60 px-2 py-1 rounded-lg border border-emerald-300/80 cursor-pointer transition-colors shadow-2xs whitespace-nowrap"
+                    >
+                      🎉 Blast Confetti
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* In-place Allocation Editor */}
               {isEditing && (
-                <div className="p-3.5 rounded-xl bg-blue-50/60 border border-blue-200 space-y-2 animate-in fade-in">
-                  <label className="block text-xs font-semibold text-blue-900">
-                    Update Allocated Reserve (INR):
-                  </label>
+                <div className="p-4 rounded-xl bg-blue-50/80 border border-blue-200 space-y-3 animate-in fade-in">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-xs font-bold text-blue-950">
+                      Update Allocated Reserve (INR):
+                    </label>
+                    {/* Quick 100% Fill Button */}
+                    <button
+                      type="button"
+                      onClick={() => setEditAllocatedAmount(goal.targetAmount)}
+                      className="text-[11px] font-bold text-blue-700 hover:text-blue-900 bg-white hover:bg-blue-100/70 px-2 py-0.5 rounded-md border border-blue-200 cursor-pointer transition-colors"
+                    >
+                      Fill to 100% (₹{goal.targetAmount})
+                    </button>
+                  </div>
+
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
@@ -290,8 +459,8 @@ export default function SavingsScreen({
                       className="flex-1 px-3 py-1.5 rounded-lg bg-white border border-blue-300 text-xs font-mono font-bold text-blue-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
                     />
                     <button
-                      onClick={() => handleSaveEdit(goal.id)}
-                      className="px-3 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg cursor-pointer"
+                      onClick={() => handleSaveEdit(goal.id, goal.targetAmount)}
+                      className="px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-lg cursor-pointer transition-colors shadow-xs"
                     >
                       Update
                     </button>

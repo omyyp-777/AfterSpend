@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import Lenis from "lenis";
+import { motion } from "framer-motion";
 import {
   FinanceState,
   PurchaseScenario,
@@ -331,57 +332,114 @@ export default function App() {
           </div>
         </HeroGeometric>
 
-        {/* Floating Quick Summary Bar Overlaid At Base Of Hero */}
-        <div className="relative z-20 -mt-10 mb-8 max-w-5xl mx-auto px-4">
-          <div className="p-4 sm:p-5 rounded-2xl bg-white/95 backdrop-blur-xl border border-zinc-200/80 shadow-xl flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-wrap items-center gap-6">
-              <div>
-                <span className="text-[11px] text-zinc-500 block font-semibold uppercase tracking-wider">Safe-to-Spend</span>
-                <span
-                  className={`text-2xl font-black font-mono tracking-tight ${
-                    baselineMetrics.uncommittedFunds >= 0
-                      ? "text-emerald-600"
-                      : "text-rose-600"
-                  }`}
-                >
-                  {formatINR(baselineMetrics.uncommittedFunds)}
-                </span>
-              </div>
-
-              <div className="h-8 w-px bg-zinc-200 hidden sm:block" />
-
-              <div>
-                <span className="text-[11px] text-zinc-500 block font-semibold uppercase tracking-wider">Daily Allowance</span>
-                <span className="text-2xl font-bold font-mono text-zinc-900">
-                  {formatINR(baselineMetrics.dailyDiscretionaryAllowance, true)}/d
-                </span>
-              </div>
-
-              <div className="h-8 w-px bg-zinc-200 hidden sm:block" />
-
-              <div className="hidden sm:block">
-                <span className="text-[11px] text-zinc-500 block font-semibold uppercase tracking-wider">Health Score</span>
-                <span className="text-2xl font-bold font-mono text-indigo-600">
-                  {baselineMetrics.healthScore}/100 <span className="text-xs font-medium text-zinc-500 font-sans">({baselineMetrics.healthStatus})</span>
-                </span>
-              </div>
-            </div>
-
-            <button
-              onClick={() => handleSelectTab("simulator")}
-              className="inline-flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-all shadow-sm shrink-0 cursor-pointer"
+        {/* Floating Quick Summary Dashboard Cards Overlaid At Base Of Hero */}
+        <motion.div
+          initial={{ opacity: 0, y: 32 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+          className="relative z-20 -mt-10 mb-8 max-w-5xl mx-auto px-4"
+        >
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-white/95 backdrop-blur-xl border border-zinc-200/80 shadow-xl grid grid-cols-2 md:grid-cols-4 gap-3">
+            {/* Card 1: Safe-to-Spend */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.45, delay: 0.05, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{ y: -2, transition: { duration: 0.2 } }}
+              className="p-3.5 rounded-xl bg-zinc-50/70 border border-zinc-200/60 hover:bg-white hover:border-emerald-200 transition-all flex flex-col justify-between"
             >
-              <Sparkles className="w-3.5 h-3.5" />
-              Simulate ₹2,000 Purchase
-            </button>
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[10px] sm:text-[11px] text-zinc-500 font-semibold uppercase tracking-wider">Safe-to-Spend</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              </div>
+              <div
+                className={`text-xl sm:text-2xl font-black font-mono tracking-tight mt-1 ${
+                  baselineMetrics.uncommittedFunds >= 0
+                    ? "text-emerald-600"
+                    : "text-rose-600"
+                }`}
+              >
+                {formatINR(baselineMetrics.uncommittedFunds)}
+              </div>
+              <span className="text-[10px] text-zinc-400 font-mono mt-0.5">Uncommitted funds</span>
+            </motion.div>
+
+            {/* Card 2: Daily Allowance */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.45, delay: 0.12, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{ y: -2, transition: { duration: 0.2 } }}
+              className="p-3.5 rounded-xl bg-zinc-50/70 border border-zinc-200/60 hover:bg-white hover:border-blue-200 transition-all flex flex-col justify-between"
+            >
+              <span className="text-[10px] sm:text-[11px] text-zinc-500 font-semibold uppercase tracking-wider">Daily Allowance</span>
+              <div className="text-xl sm:text-2xl font-bold font-mono text-zinc-900 mt-1">
+                {formatINR(baselineMetrics.dailyDiscretionaryAllowance, true)}
+                <span className="text-xs font-normal text-zinc-400 font-sans">/d</span>
+              </div>
+              <span className="text-[10px] text-zinc-400 font-mono mt-0.5">30-day runway pace</span>
+            </motion.div>
+
+            {/* Card 3: Health Score */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.45, delay: 0.19, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{ y: -2, transition: { duration: 0.2 } }}
+              onClick={() => handleSelectTab("health")}
+              className="p-3.5 rounded-xl bg-zinc-50/70 border border-zinc-200/60 hover:bg-white hover:border-indigo-200 transition-all flex flex-col justify-between cursor-pointer group"
+            >
+              <div className="flex items-center justify-between gap-1">
+                <span className="text-[10px] sm:text-[11px] text-zinc-500 font-semibold uppercase tracking-wider">Health Score</span>
+                <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">
+                  {baselineMetrics.healthStatus}
+                </span>
+              </div>
+              <div className="text-xl sm:text-2xl font-bold font-mono text-indigo-600 mt-1">
+                {baselineMetrics.healthScore}<span className="text-xs text-zinc-400 font-sans font-medium">/100</span>
+              </div>
+              <span className="text-[10px] text-zinc-400 group-hover:text-indigo-600 transition-colors mt-0.5">Audit diagnosis →</span>
+            </motion.div>
+
+            {/* Card 4: Quick Action Trigger */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.45, delay: 0.26, ease: [0.22, 1, 0.36, 1] }}
+              whileHover={{ y: -2, transition: { duration: 0.2 } }}
+              className="p-3.5 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-sm flex flex-col justify-between cursor-pointer hover:shadow-md transition-all group"
+              onClick={() => handleSelectTab("simulator")}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] sm:text-[11px] text-blue-100 font-semibold uppercase tracking-wider">Quick Action</span>
+                <Sparkles className="w-3.5 h-3.5 text-blue-200 group-hover:rotate-12 transition-transform" />
+              </div>
+              <div className="text-sm font-bold tracking-tight text-white mt-1 leading-tight">
+                Simulate ₹2,000 Spend
+              </div>
+              <span className="text-[10px] text-blue-100 font-medium mt-0.5 group-hover:underline">
+                Run scenario test →
+              </span>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* 3. MAIN DASHBOARD CONTENT AREA */}
       <main id="main-content" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8 space-y-8">
         {/* Navigation Tabs Bar (PRD Section 7) */}
-        <div className="flex items-center overflow-x-auto no-scrollbar gap-2 p-1.5 rounded-2xl bg-white/90 backdrop-blur-md border border-zinc-200/80 shadow-xs">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="flex items-center overflow-x-auto no-scrollbar gap-2 p-1.5 rounded-2xl bg-white/90 backdrop-blur-md border border-zinc-200/80 shadow-xs"
+        >
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;
@@ -400,64 +458,71 @@ export default function App() {
               </button>
             );
           })}
-        </div>
+        </motion.div>
 
         {/* Active Screen View */}
-        {activeTab === "overview" && (
-          <OverviewScreen
-            state={state}
-            metrics={baselineMetrics}
-            scenario={currentScenario}
-            onNavigateTab={(tab) => handleSelectTab(tab as NavTab)}
-            onOpenAddExpense={() => setExpenseModalOpen(true)}
-            onOpenAddCommitment={() => setCommitmentModalOpen(true)}
-            onMarkCommitmentPaid={handleMarkCommitmentPaid}
-          />
-        )}
+        <motion.div
+          key={activeTab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {activeTab === "overview" && (
+            <OverviewScreen
+              state={state}
+              metrics={baselineMetrics}
+              scenario={currentScenario}
+              onNavigateTab={(tab) => handleSelectTab(tab as NavTab)}
+              onOpenAddExpense={() => setExpenseModalOpen(true)}
+              onOpenAddCommitment={() => setCommitmentModalOpen(true)}
+              onMarkCommitmentPaid={handleMarkCommitmentPaid}
+            />
+          )}
 
-        {activeTab === "simulator" && (
-          <SimulatorScreen
-            state={state}
-            currentScenario={currentScenario}
-            onUpdateScenario={(sc) => setCurrentScenario(sc)}
-            onApplyToPlan={handleApplyToPlan}
-            onMarkAsPurchased={handleMarkAsPurchased}
-            onResetScenario={handleResetScenario}
-          />
-        )}
+          {activeTab === "simulator" && (
+            <SimulatorScreen
+              state={state}
+              currentScenario={currentScenario}
+              onUpdateScenario={(sc) => setCurrentScenario(sc)}
+              onApplyToPlan={handleApplyToPlan}
+              onMarkAsPurchased={handleMarkAsPurchased}
+              onResetScenario={handleResetScenario}
+            />
+          )}
 
-        {activeTab === "forecast" && (
-          <ForecastScreen
-            state={state}
-            metrics={baselineMetrics}
-            scenario={currentScenario}
-          />
-        )}
+          {activeTab === "forecast" && (
+            <ForecastScreen
+              state={state}
+              metrics={baselineMetrics}
+              scenario={currentScenario}
+            />
+          )}
 
-        {activeTab === "savings" && (
-          <SavingsScreen
-            state={state}
-            metrics={baselineMetrics}
-            onUpdateGoalAllocation={handleUpdateGoalAllocation}
-            onAddGoal={handleAddGoal}
-            onDeleteGoal={handleDeleteGoal}
-          />
-        )}
+          {activeTab === "savings" && (
+            <SavingsScreen
+              state={state}
+              metrics={baselineMetrics}
+              onUpdateGoalAllocation={handleUpdateGoalAllocation}
+              onAddGoal={handleAddGoal}
+              onDeleteGoal={handleDeleteGoal}
+            />
+          )}
 
-        {activeTab === "commitments" && (
-          <CommitmentsScreen
-            state={state}
-            metrics={baselineMetrics}
-            onAddCommitment={handleAddCommitment}
-            onMarkPaid={handleMarkCommitmentPaid}
-            onCancelCommitment={handleCancelCommitment}
-            onDeleteCommitment={handleDeleteCommitment}
-          />
-        )}
+          {activeTab === "commitments" && (
+            <CommitmentsScreen
+              state={state}
+              metrics={baselineMetrics}
+              onAddCommitment={handleAddCommitment}
+              onMarkPaid={handleMarkCommitmentPaid}
+              onCancelCommitment={handleCancelCommitment}
+              onDeleteCommitment={handleDeleteCommitment}
+            />
+          )}
 
-        {activeTab === "health" && (
-          <HealthScreen state={state} metrics={baselineMetrics} />
-        )}
+          {activeTab === "health" && (
+            <HealthScreen state={state} metrics={baselineMetrics} />
+          )}
+        </motion.div>
       </main>
 
       {/* 4. MODALS */}
