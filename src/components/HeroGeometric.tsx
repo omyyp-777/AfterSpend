@@ -1,7 +1,7 @@
 "use client";
 
 /* eslint-disable react/no-unknown-property */
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useEffect } from "react";
 import { Canvas, useFrame, ThreeElements } from "@react-three/fiber";
 import * as THREE from "three";
 import { motion } from "framer-motion";
@@ -141,6 +141,24 @@ function sanitizeHexColor(value: string, fallback: string) {
     return trimmed.startsWith("#") ? trimmed : `#${trimmed}`;
 }
 
+const INSTANCED_PARTICLE_COUNT = 48;
+const POINTS_PARTICLE_COUNT = 80;
+
+interface InstancedDriftParticle {
+    x: number;
+    y: number;
+    z: number;
+    vx: number;
+    vy: number;
+    rotX: number;
+    rotY: number;
+    rotZ: number;
+    rotSpeedX: number;
+    rotSpeedY: number;
+    rotSpeedZ: number;
+    scale: number;
+}
+
 const GradientPlane = ({
     color1,
     color2,
@@ -152,6 +170,10 @@ const GradientPlane = ({
 }) => {
     const meshRef = useRef<THREE.Mesh>(null);
     const materialRef = useRef<THREE.ShaderMaterial>(null);
+    const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
+    const pointsRef = useRef<THREE.Points>(null);
+    const dummy = useMemo(() => new THREE.Object3D(), []);
+
     const uniforms = useMemo(
         () => ({
             uTime: { value: 0 },
@@ -162,10 +184,71 @@ const GradientPlane = ({
         []
     );
 
-    useFrame((state) => {
+    // 1. Data for small instanced geometric particles drifting across the screen
+    const instancedParticles = useMemo<InstancedDriftParticle[]>(() => {
+        const list: InstancedDriftParticle[] = [];
+        for (let i = 0; i < INSTANCED_PARTICLE_COUNT; i++) {
+            // Distribute across screen coordinates
+            const x = ((i % 8) - 3.5) * 1.15 + (Math.sin(i * 1.7) * 0.5);
+            const y = ((Math.floor(i / 8) - 2.5) * 1.05) + (Math.cos(i * 2.3) * 0.4);
+            const z = (Math.sin(i * 3.1) * 1.5) + 0.1; // depth in front of the shader
+            list.push({
+                x,
+                y,
+                z,
+                // Gentle diagonal drift matching the shader's bottom-left to top-right gradient flow
+                vx: 0.05 + (Math.sin(i * 1.3) * 0.02 + 0.02),
+                vy: 0.04 + (Math.cos(i * 1.9) * 0.02 + 0.02),
+                rotX: Math.random() * Math.PI,
+                rotY: Math.random() * Math.PI,
+                rotZ: Math.random() * Math.PI,
+                rotSpeedX: (Math.sin(i) * 0.35 + 0.2) * 0.015,
+                rotSpeedY: (Math.cos(i * 1.2) * 0.35 + 0.2) * 0.018,
+                rotSpeedZ: (Math.sin(i * 0.8) * 0.25) * 0.012,
+                scale: 0.07 + (Math.abs(Math.sin(i * 2.1)) * 0.07),
+            });
+        }
+        return list;
+    }, []);
+
+    // 2. Data for small glowing THREE.Points drifting across the screen
+    const [pointsPositions, pointsInitial] = useMemo(() => {
+        const pos = new Float32Array(POINTS_PARTICLE_COUNT * 3);
+        const init = new Float32Array(POINTS_PARTICLE_COUNT * 3);
+        for (let i = 0; i < POINTS_PARTICLE_COUNT; i++) {
+            const x = (Math.sin(i * 1.4) * 4.4) + (Math.cos(i * 0.7) * 0.4);
+            const y = (Math.cos(i * 1.8) * 3.2) + (Math.sin(i * 2.1) * 0.3);
+            const z = (Math.sin(i * 2.9) * 1.5);
+            pos[i * 3] = x;
+            pos[i * 3 + 1] = y;
+            pos[i * 3 + 2] = z;
+            init[i * 3] = x;
+            init[i * 3 + 1] = y;
+            init[i * 3 + 2] = z;
+        }
+        return [pos, init];
+    }, []);
+
+    // Update instance colors when theme colors change
+    useEffect(() => {
+        if (!instancedMeshRef.current) return;
+        const c1 = new THREE.Color(sanitizeHexColor(color1, HERO_GEOMETRIC_FALLBACK_COLOR_1));
+        const c2 = new THREE.Color(sanitizeHexColor(color2, HERO_GEOMETRIC_FALLBACK_COLOR_2));
+        const tempColor = new THREE.Color();
+        for (let i = 0; i < INSTANCED_PARTICLE_COUNT; i++) {
+            tempColor.lerpColors(c1, c2, (i / INSTANCED_PARTICLE_COUNT) * 0.7 + 0.15);
+            instancedMeshRef.current.setColorAt(i, tempColor);
+        }
+        if (instancedMeshRef.current.instanceColor) {
+            instancedMeshRef.current.instanceColor.needsUpdate = true;
+        }
+    }, [color1, color2]);
+
+    useFrame((state, delta) => {
         const { clock, size } = state;
         const currentElapsed = clock.getElapsedTime() * speed;
 
+        // 1. Update gradient shader uniforms
         uniforms.uTime.value = currentElapsed;
         uniforms.uResolution.value.set(size.width, size.height);
         uniforms.uColor1.value.set(sanitizeHexColor(color1, HERO_GEOMETRIC_FALLBACK_COLOR_1));
@@ -177,143 +260,103 @@ const GradientPlane = ({
             materialRef.current.uniforms.uColor1.value.set(sanitizeHexColor(color1, HERO_GEOMETRIC_FALLBACK_COLOR_1));
             materialRef.current.uniforms.uColor2.value.set(sanitizeHexColor(color2, HERO_GEOMETRIC_FALLBACK_COLOR_2));
         }
-    });
 
-    return (
-        <mesh ref={meshRef} scale={[2, 2, 1]}>
-            <planeGeometry args={[2, 2]} />
-            <shaderMaterial
-                ref={materialRef}
-                vertexShader={vertexShader}
-                fragmentShader={fragmentShader}
-                uniforms={uniforms}
-                transparent={true}
-                depthWrite={false}
-                depthTest={false}
-            />
-        </mesh>
-    );
-};
+        // 2. Animate small instanced geometric particles drifting across the screen
+        if (instancedMeshRef.current) {
+            const effectiveDrift = Math.min(delta, 0.1) * speed * 2.2;
+            for (let i = 0; i < INSTANCED_PARTICLE_COUNT; i++) {
+                const p = instancedParticles[i];
+                p.x += p.vx * effectiveDrift;
+                p.y += p.vy * effectiveDrift;
+                p.rotX += p.rotSpeedX;
+                p.rotY += p.rotSpeedY;
+                p.rotZ += p.rotSpeedZ;
 
-// --- Floating Geometric Polyhedra System ---
+                // Screen boundary wrapping
+                if (p.x > 4.6) p.x = -4.6;
+                if (p.y > 3.4) p.y = -3.4;
 
-interface ParticleItem {
-    id: number;
-    initialPos: [number, number, number];
-    rotSpeed: [number, number, number];
-    driftSpeed: number;
-    scale: number;
-    geometryType: "octa" | "icosa" | "tetra" | "dodeca" | "torus";
-    swayFreq: number;
-    swayAmp: number;
-    color: string;
-}
+                dummy.position.set(p.x, p.y, p.z);
+                dummy.rotation.set(p.rotX, p.rotY, p.rotZ);
+                dummy.scale.setScalar(p.scale);
+                dummy.updateMatrix();
 
-const FloatingGeometricParticles = ({ speed = 0.6 }: { speed?: number }) => {
-    const groupRef = useRef<THREE.Group>(null);
-
-    // Deterministically generate a curated collection of floating polyhedra
-    const particles = useMemo<ParticleItem[]>(() => {
-        const types: Array<ParticleItem["geometryType"]> = ["octa", "icosa", "tetra", "dodeca", "torus"];
-        const colors = ["#2563EB", "#3B82F6", "#60A5FA", "#818CF8", "#93C5FD", "#0284C7"];
-        
-        const items: ParticleItem[] = [];
-        const count = 16;
-        for (let i = 0; i < count; i++) {
-            // Distribute across 3D viewing frustum
-            const x = ((i % 4) - 1.5) * 2.2 + (Math.sin(i * 1.7) * 0.8);
-            const y = ((Math.floor(i / 4) - 1.5) * 1.5) + (Math.cos(i * 2.3) * 0.5);
-            const z = (Math.sin(i * 3.1) * 1.6) + 0.2; // depth between -1.4 and 1.8
-
-            items.push({
-                id: i,
-                initialPos: [x, y, z],
-                rotSpeed: [
-                    (Math.sin(i) * 0.35 + 0.15) * 0.5,
-                    (Math.cos(i * 1.3) * 0.35 + 0.15) * 0.5,
-                    (Math.sin(i * 0.7) * 0.2) * 0.5
-                ],
-                driftSpeed: 0.08 + (Math.sin(i * 2.1) * 0.04 + 0.04), // subtle slow drift
-                scale: 0.18 + (Math.abs(Math.sin(i * 1.1)) * 0.22),
-                geometryType: types[i % types.length],
-                swayFreq: 0.4 + (i % 3) * 0.2,
-                swayAmp: 0.2 + (i % 4) * 0.1,
-                color: colors[i % colors.length]
-            });
+                instancedMeshRef.current.setMatrixAt(i, dummy.matrix);
+            }
+            instancedMeshRef.current.instanceMatrix.needsUpdate = true;
         }
-        return items;
-    }, []);
 
-    // Create refs for each particle mesh
-    const meshRefs = useRef<(THREE.Group | null)[]>([]);
+        // 3. Animate small THREE.Points drifting across the screen
+        if (pointsRef.current) {
+            const positionAttr = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
+            if (positionAttr) {
+                const arr = positionAttr.array as Float32Array;
+                for (let i = 0; i < POINTS_PARTICLE_COUNT; i++) {
+                    const driftX = (0.06 + (i % 4) * 0.02) * speed;
+                    const driftY = (0.08 + (i % 5) * 0.02) * speed;
 
-    useFrame((state) => {
-        const time = state.clock.getElapsedTime() * speed;
+                    let curX = pointsInitial[i * 3] + (currentElapsed * driftX);
+                    let curY = pointsInitial[i * 3 + 1] + (currentElapsed * driftY);
 
-        particles.forEach((p, idx) => {
-            const mesh = meshRefs.current[idx];
-            if (!mesh) return;
+                    // Smooth modulo wrap inside viewport bounds
+                    curX = ((curX + 4.6) % 9.2) - 4.6;
+                    curY = ((curY + 3.4) % 6.8) - 3.4;
 
-            // Gentle continuous rotation
-            mesh.rotation.x += p.rotSpeed[0] * 0.015;
-            mesh.rotation.y += p.rotSpeed[1] * 0.018;
-            mesh.rotation.z += p.rotSpeed[2] * 0.012;
-
-            // Gentle vertical upward drift with wrapping
-            const currentY = p.initialPos[1] + (time * p.driftSpeed) % 6;
-            // Wrap between -3.0 and 3.0
-            const wrappedY = ((currentY + 3.0) % 6.0) - 3.0;
-
-            // Subtle harmonic sway on X and Z
-            const swayX = p.initialPos[0] + Math.sin(time * p.swayFreq + p.id) * p.swayAmp;
-            const swayZ = p.initialPos[2] + Math.cos(time * (p.swayFreq * 0.8) + p.id) * (p.swayAmp * 0.5);
-
-            mesh.position.set(swayX, wrappedY, swayZ);
-        });
+                    arr[i * 3] = curX;
+                    arr[i * 3 + 1] = curY;
+                    arr[i * 3 + 2] = pointsInitial[i * 3 + 2] + Math.sin(currentElapsed * 0.5 + i) * 0.12;
+                }
+                positionAttr.needsUpdate = true;
+            }
+        }
     });
 
     return (
-        <group ref={groupRef}>
-            {particles.map((p, idx) => (
-                <group
-                    key={p.id}
-                    ref={(el) => {
-                        meshRefs.current[idx] = el;
-                    }}
-                    position={p.initialPos}
-                    scale={[p.scale, p.scale, p.scale]}
-                >
-                    {/* Render geometry based on type with dual wireframe & subtle translucent faces */}
-                    <mesh>
-                        {p.geometryType === "octa" && <octahedronGeometry args={[1, 0]} />}
-                        {p.geometryType === "icosa" && <icosahedronGeometry args={[1, 0]} />}
-                        {p.geometryType === "tetra" && <tetrahedronGeometry args={[1, 0]} />}
-                        {p.geometryType === "dodeca" && <dodecahedronGeometry args={[1, 0]} />}
-                        {p.geometryType === "torus" && <torusGeometry args={[0.9, 0.25, 12, 24]} />}
-                        <meshBasicMaterial
-                            color={p.color}
-                            wireframe={true}
-                            transparent={true}
-                            opacity={0.32}
-                        />
-                    </mesh>
+        <group>
+            {/* Fullscreen gradient shader plane at the back */}
+            <mesh ref={meshRef} scale={[2, 2, 1]}>
+                <planeGeometry args={[2, 2]} />
+                <shaderMaterial
+                    ref={materialRef}
+                    vertexShader={vertexShader}
+                    fragmentShader={fragmentShader}
+                    uniforms={uniforms}
+                    transparent={true}
+                    depthWrite={false}
+                    depthTest={false}
+                />
+            </mesh>
 
-                    {/* Subtle translucent inner body for tactile depth */}
-                    <mesh scale={[0.94, 0.94, 0.94]}>
-                        {p.geometryType === "octa" && <octahedronGeometry args={[1, 0]} />}
-                        {p.geometryType === "icosa" && <icosahedronGeometry args={[1, 0]} />}
-                        {p.geometryType === "tetra" && <tetrahedronGeometry args={[1, 0]} />}
-                        {p.geometryType === "dodeca" && <dodecahedronGeometry args={[1, 0]} />}
-                        {p.geometryType === "torus" && <torusGeometry args={[0.9, 0.25, 12, 24]} />}
-                        <meshBasicMaterial
-                            color={p.color}
-                            transparent={true}
-                            opacity={0.06}
-                            depthWrite={false}
-                        />
-                    </mesh>
-                </group>
-            ))}
+            {/* Set of small, slow-moving geometric particles drifting across the screen (instanced octahedrons) */}
+            <instancedMesh
+                ref={instancedMeshRef}
+                args={[undefined, undefined, INSTANCED_PARTICLE_COUNT]}
+            >
+                <octahedronGeometry args={[1, 0]} />
+                <meshBasicMaterial
+                    wireframe={true}
+                    transparent={true}
+                    opacity={0.35}
+                    color="#60A5FA"
+                />
+            </instancedMesh>
+
+            {/* Set of small, slow-moving geometric particles drifting across the screen (THREE.Points) */}
+            <points ref={pointsRef}>
+                <bufferGeometry>
+                    <bufferAttribute
+                        attach="attributes-position"
+                        args={[pointsPositions, 3]}
+                    />
+                </bufferGeometry>
+                <pointsMaterial
+                    color="#93C5FD"
+                    size={0.045}
+                    transparent={true}
+                    opacity={0.55}
+                    depthWrite={false}
+                />
+            </points>
         </group>
     );
 };
@@ -400,67 +443,6 @@ const LightTrails = ({ speed = 0.6 }: { speed?: number }) => {
     );
 };
 
-// --- Subtle Ambient Stardust Points ---
-
-const FloatingDustPoints = ({ count = 60, speed = 0.6 }: { count?: number; speed?: number }) => {
-    const pointsRef = useRef<THREE.Points>(null);
-
-    const [positions, initialPositions] = useMemo(() => {
-        const pos = new Float32Array(count * 3);
-        const init = new Float32Array(count * 3);
-        for (let i = 0; i < count; i++) {
-            const x = (Math.random() - 0.5) * 8;
-            const y = (Math.random() - 0.5) * 6;
-            const z = (Math.random() - 0.5) * 4;
-            pos[i * 3] = x;
-            pos[i * 3 + 1] = y;
-            pos[i * 3 + 2] = z;
-            init[i * 3] = x;
-            init[i * 3 + 1] = y;
-            init[i * 3 + 2] = z;
-        }
-        return [pos, init];
-    }, [count]);
-
-    useFrame((state) => {
-        const time = state.clock.getElapsedTime() * speed;
-        if (!pointsRef.current) return;
-
-        const attr = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
-        if (!attr) return;
-
-        const arr = attr.array as Float32Array;
-        for (let i = 0; i < count; i++) {
-            // Gentle upward drift
-            const speedY = 0.08 + (i % 5) * 0.02;
-            const y = initialPositions[i * 3 + 1] + (time * speedY) % 6;
-            // Wrap between -3 and 3
-            arr[i * 3 + 1] = ((y + 3) % 6) - 3;
-            // Slight horizontal sway
-            arr[i * 3] = initialPositions[i * 3] + Math.sin(time * 0.5 + i) * 0.12;
-        }
-        attr.needsUpdate = true;
-    });
-
-    return (
-        <points ref={pointsRef}>
-            <bufferGeometry>
-                <bufferAttribute
-                    attach="attributes-position"
-                    args={[positions, 3]}
-                />
-            </bufferGeometry>
-            <pointsMaterial
-                color="#93C5FD"
-                size={0.045}
-                transparent={true}
-                opacity={0.4}
-                depthWrite={false}
-            />
-        </points>
-    );
-};
-
 // --- Main HeroGeometric Component ---
 
 interface HeroGeometricProps extends React.ComponentPropsWithoutRef<"div"> {
@@ -507,17 +489,11 @@ export default function HeroGeometric({
                         alpha: true,
                     }}
                 >
-                    {/* 1. Underlying dithered gradient shader canvas */}
+                    {/* 1. Underlying dithered gradient shader canvas with drifting geometric particles & points */}
                     <GradientPlane color1={color1} color2={color2} speed={speed} />
 
-                    {/* 2. Slow-moving floating geometric particles */}
-                    <FloatingGeometricParticles speed={speed} />
-
-                    {/* 3. Subtle slow undulating light trails */}
+                    {/* 2. Subtle slow undulating light trails */}
                     <LightTrails speed={speed} />
-
-                    {/* 4. Ambient stardust glow particles */}
-                    <FloatingDustPoints speed={speed} />
                 </Canvas>
             </div>
 
